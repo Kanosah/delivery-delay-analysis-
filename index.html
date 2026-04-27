@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supply Chain Delivery Delay Analytic Report</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <h2>Supply Chain Delay Report</h2>
+        <span>Analytics Dashboard</span>
+      </div>
+
+      <nav aria-label="Report menu">
+        <a href="#introduction">1. Introduction / Business Problem</a>
+        <a href="#data-overview">2. Data Overview</a>
+        <a href="#data-cleaning">3. Data Cleaning Summary</a>
+        <a href="#eda">4. EDA / Key Findings</a>
+        <a href="#modelling">5. Predictive Modelling Summary</a>
+        <a href="#recommendations">6. Recommendations</a>
+        <a href="#conclusion">7. Conclusion</a>
+      </nav>
+    </aside>
+
+    <button class="toggle-btn" id="toggleBtn" aria-label="Toggle menu">&gt;&gt;&gt;</button>
+
+
+    <main class="main expanded" id="mainContent">
+      <section class="hero" id="title">
+        <div class="hero-content">
+          <span class="eyebrow">Capstone Project</span>
+          <h1>Analyzing and Predicting Delivery Delays in Supply Chain Logistics</h1>
+          <p>
+            An executive analytics report using shipment pricing and delivery history data to identify delay patterns,
+            evaluate operational risk factors, and assess whether delivery delays can be predicted in advance.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="introduction">
+        <h2>1. Introduction / Business Problem</h2>
+
+        <p>
+            Supply chain efficiency is essential for timely delivery, yet delays in global logistics can increase costs, reduce customer satisfaction, and disrupt operations. As supply chains become more complex, organisations need data-driven approaches to understand why delays occur and identify at-risk shipments. This project analyses historical shipment data to uncover key drivers of delivery delays and assess whether delays can be predicted in advance, with the aim of improving planning and operational efficiency.
+        </p>
+
+        <h3>Key Analytical Questions</h3>
+        <small>
+        <ul class="shift-right">
+            <li>How severe are delivery delays when they occur?</li>
+            <li>What factors contribute most to delivery delays?</li>
+            <li>Do delivery delays vary by month or season?</li>
+            <li>Does the fulfilment channel influence delay risk?</li>
+            <li>Do larger or higher-value shipments have a higher risk of delay?</li>
+            <li>Which shipment methods or regions are most prone to delays?</li>
+            <li>Can a predictive model reliably identify delayed shipments before delivery?</li>
+        </ul>
+        </small>
+    </section>
+
+      <section class="section" id="data-overview">
+        <h2>2. Data Overview</h2>
+        <p>
+          The dataset used for this project is the <strong>Supply Chain Shipment Pricing Data</strong> dataset from Kaggle. It contains
+          shipment-level supply chain records, including delivery dates, shipment modes, countries, vendors, product groups, item
+          quantities, item values, freight costs, insurance values, and other operational attributes.
+        </p>
+        <div class="metric-grid">
+          <div class="metric-card">
+            <strong>10,324</strong>
+            <span>Original records before cleaning</span>
+          </div>
+          <div class="metric-card">
+            <strong>35</strong>
+            <span>Original columns before cleaning</span>
+          </div>
+          <div class="metric-card">
+            <strong>Delay Flag</strong>
+            <span>Engineered target variable</span>
+          </div>
+        </div>
+        <div class="source-box">
+          Dataset source:
+          <a href="https://www.kaggle.com/datasets/sawandikirby/supply-chain-shipment-pricing-data" target="_blank" rel="noopener">
+            Kaggle — Supply Chain Shipment Pricing Data
+          </a>
+        </div>
+      </section>
+
+      <section class="section" id="data-cleaning">
+        <h2>3. Data Cleaning Summary</h2>
+        <p>
+          The dataset was cleaned to improve reliability before analysis. Column names were standardised, encoding issues were
+          reviewed, date fields were converted into datetime format, and mixed numeric fields such as freight cost, weight, and
+          line item insurance were cleaned and converted into numeric data types. Irrelevant identifiers, constant fields, and
+          columns with excessive missing values were removed.
+        </p>
+        <p>
+          Missing numeric values were imputed using the median because the numeric distributions were skewed, while missing
+          categorical values were labelled as <strong>None</strong>. Duplicate records were removed. Two new variables were engineered
+          from <strong>scheduled delivery date</strong> and <strong>delivered to client date</strong>: <strong>delivery_delay_days</strong>, which measures
+          how early or late a shipment arrived, and <strong>delivery_delay_flag</strong>, which identifies whether a shipment was delayed.
+          These engineered variables supported deeper analysis of both delay severity and delay risk.
+        </p>
+        <div class="metric-grid">
+          <div class="metric-card">
+            <strong>10,270</strong>
+            <span>Final cleaned records</span>
+          </div>
+          <div class="metric-card">
+            <strong>29</strong>
+            <span>Final cleaned columns</span>
+          </div>
+          <div class="metric-card">
+            <strong>0</strong>
+            <span>Remaining missing values and duplicates</span>
+          </div>
+        </div>
+      </section>
+
+        <section class="section" id="eda">
+            <h2>4. Exploratory Data Analysis / Key Findings</h2>
+
+            <div class="eda-block">
+
+                <h3>How severe are delivery delays?</h3>
+
+                <!-- Image Grid -->
+                <div class="eda-grid">
+
+                <div class="eda-card">
+                    <img src="images/delay_distribution.png" alt="Distribution of Delivery Delay Days">
+                    <p class="caption">Distribution of delivery delay days showing concentration around on-time deliveries with long tails.</p>
+                </div>
+
+                <div class="eda-card">
+                    <img src="images/delay_boxplot.png" alt="Boxplot of Delivery Delay Days">
+                    <p class="caption">Boxplot highlighting spread, median, and extreme delay outliers.</p>
+                </div>
+
+                </div>
+
+                <!-- Interpretation -->
+                <div class="insight-card">
+                    <p>
+                        Most shipments are delivered on time or slightly early, with a 
+                        strong concentration around zero delay; however, the distribution is 
+                        highly skewed with a long tail indicating significant delays. While the 
+                        median delay is approximately 0 days, variability is substantial, with 
+                        some shipments delayed by over 100 days and others delivered more than 300 days early. 
+                        The boxplot confirms numerous outliers, especially on the delay side, showing that although 
+                        delays are not frequent, they can be severe, suggesting generally stable performance with 
+                        occasional high-impact disruptions.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="eda-block">
+
+                <h3>What factors contribute to delivery delays?</h3>
+
+                <!-- Image Grid -->
+                <div class="eda-grid">
+
+                    <div class="eda-card">
+                        <img src="images/delay_by_shipment_mode.png" alt="Delay rate by shipment mode">
+                        <p class="caption">Delay rate by shipment mode.</p>
+                    </div>
+
+                    <div class="eda-card">
+                        <img src="images/delay_by_country_mode.png" alt="Delay rate by country">
+                        <p class="caption">Delay rate by top countries.</p>
+                    </div>
+
+                    <div class="eda-card">
+                        <img src="images/delay_by_vendor_mode.png" alt="Delay rate by vendor">
+                        <p class="caption">Delay rate by top vendors.</p>
+                    </div>
+
+                    <div class="eda-card">
+                        <img src="images/delay_by_product_group_mode.png" alt="Delay rate by product group">
+                        <p class="caption">Delay rate by product group.</p>
+                    </div>
+
+                </div>
+
+                <!-- Interpretation -->
+                <div class="insight-card">
+                    <p>
+                        Delivery delays are influenced by key operational factors including shipment mode, country, vendor, and product group. Ocean (≈17.5%) and truck (≈16%) shipments show the highest delay rates, followed by air charter (≈11–12%) and air (≈9–10%), indicating that slower transport methods are more prone to delays. Regionally, Mozambique (≈18–19%), Zambia (≈16%), and Zimbabwe (≈14%) have the highest delay rates, while Vietnam remains very low (≈1%). Vendor performance also varies, with SCMS from RDC (≈17%), Aurobindo Pharma (≈14–15%), and CIPLA/Orgenics (≈13%) showing higher delay risks. Product group differences are evident, with ARV (≈12.7%) higher than HRDT (≈6.5%), suggesting added complexity in handling. Overall, delays are not random but driven by identifiable operational, geographic, supplier, and product-related factors.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="eda-block">
+
+                <h3>Do delays vary by month or season?</h3>
+
+                <!-- Image Grid -->
+                <div class="eda-grid">
+
+                    <div class="eda-card-single">
+                        <img src="images/delay_by_month.png" alt="Delay rate by month">
+                        <p class="caption">Delay rate by month.</p>
+                    </div>
+
+                </div>
+
+                <!-- Interpretation -->
+                <div class="insight-card">
+                    <p>
+                        Delivery delays show noticeable variation across months, indicating seasonal patterns. January has the highest delay rate at about 17%, followed by July and August at around 14% and 13%, suggesting periods of higher operational pressure or disruption. In contrast, June and December have the lowest delay rates at approximately 8–9%. Overall, delays fluctuate throughout the year, showing that delivery performance is influenced by seasonal factors rather than remaining constant.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="eda-block">
+
+                <h3>Does fulfilment channel influence delivery delays?</h3>
+
+                <!-- Image Grid -->
+                <div class="eda-grid">
+
+                    <div class="eda-card-single">
+                        <img src="images/delay_by_channel.png" alt="Delay rate by fulfilment channel">
+                        <p class="caption">Delay rate by fulfilment channel.</p>
+                    </div>
+
+                </div>
+
+                <!-- Interpretation -->
+                <div class="insight-card">
+                    <p>
+                        The fulfilment channel shows a strong impact on delivery performance. Shipments fulfilled through RDC have a significantly higher delay rate of about 17%, compared to direct drop shipments at approximately 5%. This indicates that centrally managed distribution channels may introduce additional handling or coordination delays, while direct delivery routes tend to be more efficient.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="eda-block">
+
+                <h3>Do larger or higher-value shipments have a higher risk of delay?</h3>
+
+                <!-- Image Grid -->
+                <div class="eda-grid">
+
+                    <div class="eda-card-single">
+                        <img src="images/quantity_vs_delay.png" alt="Quantity vs delivery delay">
+                        <p class="caption">Shipment quantity vs delivery delay days.</p>
+                    </div>
+
+                    <div class="eda-card">
+                        <img src="images/delay_vs_quantity.png" alt="Delay rate by quantity group">
+                        <p class="caption">Delay rate by shipment quantity group.</p>
+                    </div>
+
+                    <div class="eda-card">
+                        <img src="images/delay_vs_value.png" alt="Delay rate by value group">
+                        <p class="caption">Delay rate by shipment value group.</p>
+                    </div>
+
+                </div>
+
+                <!-- Interpretation -->
+                <div class="insight-card">
+                    <p>
+                        Shipment size and value show a clear relationship with delivery delays. While the scatter plot indicates no strong linear pattern between quantity and delay days, grouped results reveal a clear trend: low-quantity shipments have the lowest delay rate (≈5.8%), increasing to ≈11.9% for medium and ≈16.8% for high-quantity shipments. A similar pattern is observed for value, with delay rates rising from ≈8.1% (low) to ≈10.8% (medium) and ≈15.6% (high). This suggests that larger and higher-value shipments are more likely to experience delays, likely due to increased handling complexity and coordination requirements.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="eda-block">
+
+                <h3>Which shipment methods or regions are most prone to delays?</h3>
+
+                <div class="insight-card">
+                    <p>
+                        Ocean shipments have the highest delay rate at approximately <strong>17.5%</strong>, followed by truck shipments at around <strong>16%</strong>.
+                        Regionally, <strong>Mozambique</strong> records the highest delay rate at about <strong>18–19%</strong>, followed by <strong>Zambia</strong>
+                        at approximately <strong>16%</strong> and <strong>Zimbabwe</strong> at around <strong>14%</strong>.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="section" id="modelling">
+            <h2>5. Predictive Modelling Summary</h2>
+
+            <!-- Image Grid -->
+            <div class="eda-grid">
+
+                <div class="eda-card">
+                    <img src="images/delay_prediction.png" alt="Prediction Confusion Metrix">
+                    <p class="caption">Confusion matrix.</p>
+                </div>
+
+                <div class="eda-card">
+                    <img src="images/delay_model_performance.png" alt="Model Prediction Result">
+                    <p class="caption">Model Prediction metrics.</p>
+                </div>
+
+            </div>
+
+                <div class="insight-card">
+                    <p>
+                        Before modelling, leakage features (date and derived delay variables) were removed, categorical variables were one-hot encoded, and numerical features were scaled. The data was split using stratified sampling to preserve class imbalance. Due to this imbalance, the model was tuned to prioritise recall for delayed shipments, achieving 92% recall and significantly reducing missed delays, although with lower accuracy and more false positives. This trade-off aligns with the business objective, as incorrectly flagging a shipment has low impact, while missing a delay can lead to serious operational and financial consequences. Prioritising recall therefore enables early identification of high-risk shipments and supports proactive decision-making.
+                    </p>
+                </div>
+
+            </section>
+
+      <section class="section" id="recommendations">
+                <h2>6. Recommendations</h2>
+
+                <div class="eda-text">
+                    <p>
+                        Based on the analysis, several actions can be taken to reduce delivery delays and improve overall supply chain performance.
+                    </p>
+                    <p>
+                        First, prioritise optimisation of high-risk shipment methods. Ocean and truck shipments, which show the highest delay rates (≈17.5% and ≈16%), should be reviewed for routing, scheduling, and coordination improvements. Where possible, alternative transport options such as air or air charter can be considered for time-sensitive deliveries.
+                    </p>
+                    <p>
+                        Second, strengthen operations in high-delay regions such as Mozambique (≈18–19%), Zambia (≈16%), and Zimbabwe (≈14%). This may involve improving local logistics partnerships, enhancing infrastructure coordination, or increasing monitoring and contingency planning in these areas.
+                    </p>
+                    <p>
+                        Third, monitor and manage vendor performance more closely. Vendors with higher delay rates, such as SCMS from RDC and certain suppliers, should be evaluated for process inefficiencies, and performance benchmarks should be introduced to improve reliability.
+                    </p>
+                    <p>
+                        Fourth, account for shipment complexity in planning. Larger and higher-value shipments show higher delay risk, so additional planning, tracking, and resource allocation should be applied to these shipments.
+                    </p>
+                    <p>
+                        Finally, the predictive model developed in this study should be deployed as an early warning system. With a recall of approximately 92%, the model is effective at identifying high-risk shipments in advance, enabling proactive intervention even if some non-delayed shipments are incorrectly flagged.
+                    </p>
+                </div>
+
+            </section>
+
+            <section class="section" id="conclusion">
+                <h2>7. Conclusion</h2>
+
+                <div class="eda-text">
+                    <p>
+                    This project analysed supply chain shipment data to identify the key drivers of delivery delays and assess whether delays can be predicted in advance. The findings show that delays are influenced by factors such as shipment mode, region, vendor performance, product type, and shipment size, with ocean and truck transport, certain regions (e.g., Mozambique and Zambia), and larger or higher-value shipments showing higher risk. Seasonal variation also indicates periods of increased delay likelihood. The predictive model further demonstrated that delays can be effectively identified early, achieving high recall and significantly reducing missed delays despite lower overall accuracy. This highlights the value of a recall-focused, data-driven approach, enabling organisations to detect high-risk shipments in advance and take proactive actions to improve delivery reliability and operational efficiency.
+                    </p>
+                </div>
+
+            </section>
+    </main>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const mainContent = document.getElementById('mainContent');
+
+    function handleInitialState() {
+        if (window.innerWidth <= 900) {
+        // Mobile → closed
+        sidebar.classList.add('closed');
+        mainContent.classList.add('expanded');
+        toggleBtn.innerHTML = '>>>';
+        } else {
+        // Desktop → open
+        sidebar.classList.remove('closed');
+        mainContent.classList.remove('expanded');
+        toggleBtn.innerHTML = '<<<';
+        }
+    }
+
+    handleInitialState();
+
+    toggleBtn.addEventListener('click', () => {
+        const isClosed = sidebar.classList.toggle('closed');
+        mainContent.classList.toggle('expanded', isClosed);
+        toggleBtn.innerHTML = isClosed ? '>>>' : '<<<';
+    });
+
+    // Close sidebar on mobile after clicking a link
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+            sidebar.classList.add('closed');
+            mainContent.classList.add('expanded');
+            toggleBtn.innerHTML = '>>>';
+        }
+        });
+    });
+
+    window.addEventListener('resize', handleInitialState);
+</script>
+</body>
+</html>
